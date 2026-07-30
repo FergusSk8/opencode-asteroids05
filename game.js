@@ -209,25 +209,41 @@ const SKINS = [
     name: 'CLÁSICA',
     color: '#fff',
     nose: 21,
+    radius: 12,
+    multiplier: 1,
     verts: [[20,0],[-12,-9],[-7,0],[-12,9]]
   },
   {
     name: 'INTERCEPTOR',
     color: '#0ff',
     nose: 24,
+    radius: 12,
+    multiplier: 1,
     verts: [[23,0],[4,-3],[-8,-14],[-5,-2],[-11,0],[-5,2],[-8,14],[4,3]]
   },
   {
     name: 'DOBLE ALA',
     color: '#f0f',
     nose: 20,
+    radius: 12,
+    multiplier: 1,
     verts: [[19,0],[10,-3],[0,-14],[-6,-4],[-14,0],[-6,4],[0,14],[10,3]]
   },
   {
     name: 'DELTA',
     color: '#fa0',
     nose: 20,
+    radius: 12,
+    multiplier: 1,
     verts: [[20,0],[-14,-13],[-8,0],[-14,13]]
+  },
+  {
+    name: 'MATRIX',
+    color: '#00ff66',
+    nose: 42,
+    radius: 24,
+    multiplier: 2,
+    verts: [[40,0],[-24,-18],[-14,0],[-24,18]]
   },
 ];
 
@@ -241,7 +257,7 @@ class Ship {
     this.angle  = -Math.PI / 2;
     this.vx     = 0;
     this.vy     = 0;
-    this.radius = 12;
+    this.radius = SKINS[skinIndex].radius;
     this.speedTimer    = 0;
     this.tripleTimer   = 0;
     this.shield        = 0;
@@ -297,7 +313,7 @@ class Ship {
       ctx.strokeStyle = `rgba(68,170,255,${alpha.toFixed(2)})`;
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(this.x, this.y, 24, 0, Math.PI * 2);
+      ctx.arc(this.x, this.y, this.radius * 2, 0, Math.PI * 2);
       ctx.stroke();
     }
 
@@ -318,10 +334,11 @@ class Ship {
 
     // Llama del propulsor
     if (this.thrusting && Math.random() > 0.35) {
+      const f = this.radius / 12;
       ctx.beginPath();
-      ctx.moveTo(-8, -4);
-      ctx.lineTo(-8 - rand(6, 14), 0);
-      ctx.lineTo(-8,  4);
+      ctx.moveTo(-8 * f, -4 * f);
+      ctx.lineTo(-8 * f - rand(6, 14) * f, 0);
+      ctx.lineTo(-8 * f,  4 * f);
       ctx.strokeStyle = this.speedTimer > 0 ? 'rgba(0, 255, 255, 0.85)' : 'rgba(255, 130, 0, 0.85)';
       ctx.stroke();
     }
@@ -560,6 +577,7 @@ function update(dt) {
   if (pressed('KeyC')) {
     skinIndex = (skinIndex + 1) % SKINS.length;
     localStorage.setItem('skin', String(skinIndex));
+    ship.radius = SKINS[skinIndex].radius;
     skinNameTimer = 1.5;
   }
 
@@ -590,7 +608,7 @@ function update(dt) {
       if (!a.dead && !b.dead && dist(b, a) < a.radius) {
         b.dead = true;
         a.dead = true;
-        score += POINTS[a.size];
+        score += POINTS[a.size] * SKINS[skinIndex].multiplier;
         explode(a.x, a.y, a.size * 5);
         if (Math.random() < DROP_CHANCE) {
           const r = Math.random();
@@ -610,7 +628,7 @@ function update(dt) {
       if (!s.dead && !b.dead && dist(b, s) < s.radius) {
         b.dead = true;
         s.dead = true;
-        score += STAR_POINTS;
+        score += STAR_POINTS * SKINS[skinIndex].multiplier;
         explode(s.x, s.y, 10);
         const r = Math.random();
         powerups.push(new PowerUp(s.x, s.y, r < 1/3 ? 'speed' : r < 2/3 ? 'shield' : 'triple'));
