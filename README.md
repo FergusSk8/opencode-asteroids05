@@ -47,7 +47,6 @@ Luego visita `http://localhost:3000`.
 - Partículas de explosión al destruir asteroides
 - **Estrella fugaz**: asteroide bonus que cruza rápido con estela de cometa, se encoge y desaparece al cabo de 5 segundos. 300 puntos + power-up garantizado al acertarle
 - **Power-ups**: al destruir asteroides (20 % de probabilidad) puedes obtener **velocidad x2** (rayo cian, 5 s), **escudo** (cápsula azul, absorbe 3 golpes) o **triple disparo** (3 puntos amarillos, 5 s). La estrella fugaz concede un power-up aleatorio.
-- **Escudo**: power-up azul que protege la nave de 3 colisiones con asteroides.
 
 ## Skins
 
