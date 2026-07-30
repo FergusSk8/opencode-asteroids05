@@ -18,7 +18,7 @@ Open `index.html` directly in a browser, or `npx serve .` → `http://localhost:
 - UI strings and code comments are in Spanish (e.g. `NIVEL`, `PUNTAJE`). Match that.
 - The game world is toroidal — entities must wrap via `wrap()` when moving; canvas size constants are `W`/`H` (800x600).
 - Canvas is hardcoded `width=800 height=600` in HTML and `W`/`H` in JS; changing one requires changing the other.
-- Game tuning lives in per-size lookup tables at the top of the Asteroid section (`RADII`, `SPEEDS`, `POINTS`), constants inside `Ship.update()` (`ROT`, `THRUST`, `DRAG`), ShootingStar constants (`STAR_SPEED`, `STAR_TTL`, `STAR_POINTS`, `STAR_RADIUS`, `STAR_FADE_TIME`, `STAR_SPAWN_MIN`, `STAR_SPAWN_MAX`) at its section, and power-up constants (`DROP_CHANCE`, `SPEED_DURATION`) at the PowerUp section.
+- Game tuning lives in per-size lookup tables at the top of the Asteroid section (`RADII`, `SPEEDS`, `POINTS`), constants inside `Ship.update()` (`ROT`, `THRUST`, `DRAG`), ShootingStar constants (`STAR_SPEED`, `STAR_TTL`, `STAR_POINTS`, `STAR_RADIUS`, `STAR_FADE_TIME`, `STAR_SPAWN_MIN`, `STAR_SPAWN_MAX`) at its section, power-up constants (`DROP_CHANCE`, `SPEED_DURATION`) at the PowerUp section, and the `SKINS` table before the Ship class (each skin has `name`, `color`, `nose`, `verts`).
 - State machine: `state` is `'playing' | 'dead' | 'gameover'`; `update()` branches on it — add new states there, not in `draw()`.
 
 ## Verify changes

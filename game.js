@@ -203,6 +203,34 @@ class ShootingStar {
   }
 }
 
+// ── Skins ─────────────────────────────────────────────────────────────────────
+const SKINS = [
+  {
+    name: 'CLÁSICA',
+    color: '#fff',
+    nose: 21,
+    verts: [[20,0],[-12,-9],[-7,0],[-12,9]]
+  },
+  {
+    name: 'INTERCEPTOR',
+    color: '#0ff',
+    nose: 24,
+    verts: [[23,0],[4,-3],[-8,-14],[-5,-2],[-11,0],[-5,2],[-8,14],[4,3]]
+  },
+  {
+    name: 'DOBLE ALA',
+    color: '#f0f',
+    nose: 20,
+    verts: [[19,0],[10,-3],[0,-14],[-6,-4],[-14,0],[-6,4],[0,14],[10,3]]
+  },
+  {
+    name: 'DELTA',
+    color: '#fa0',
+    nose: 20,
+    verts: [[20,0],[-14,-13],[-8,0],[-14,13]]
+  },
+];
+
 // ── Ship ──────────────────────────────────────────────────────────────────────
 class Ship {
   constructor() { this.reset(); }
@@ -249,7 +277,7 @@ class Ship {
   tryShoot() {
     if (this.shootCooldown > 0 || this.dead) return [];
     this.shootCooldown = 0.2;
-    const NOSE = 21;
+    const NOSE = SKINS[skinIndex].nose;
     const ox = this.x + Math.cos(this.angle) * NOSE;
     const oy = this.y + Math.sin(this.angle) * NOSE;
     return [new Bullet(ox, oy, this.angle)];
@@ -260,19 +288,18 @@ class Ship {
     // Parpadeo durante invencibilidad de reaparición
     if (this.invincible > 0 && Math.floor(this.invincible * 8) % 2 === 0) return;
 
+    const skin = SKINS[skinIndex];
     ctx.save();
     ctx.translate(this.x, this.y);
     ctx.rotate(this.angle);
-    ctx.strokeStyle = '#fff';
+    ctx.strokeStyle = skin.color;
     ctx.lineWidth   = 1.5;
     ctx.lineJoin    = 'round';
 
-    // Silueta clásica: triángulo con muesca trasera
     ctx.beginPath();
-    ctx.moveTo( 20,  0);   // nariz
-    ctx.lineTo(-12, -9);   // ala izquierda
-    ctx.lineTo( -7,  0);   // muesca trasera
-    ctx.lineTo(-12,  9);   // ala derecha
+    ctx.moveTo(skin.verts[0][0], skin.verts[0][1]);
+    for (let i = 1; i < skin.verts.length; i++)
+      ctx.lineTo(skin.verts[i][0], skin.verts[i][1]);
     ctx.closePath();
     ctx.stroke();
 
@@ -382,6 +409,11 @@ let score, lives, level;
 let state;      // 'playing' | 'dead' | 'gameover'
 let deadTimer;
 let shootingStars, starTimer;
+let skinIndex = (() => {
+  const v = parseInt(localStorage.getItem('skin'), 10);
+  return v >= 0 && v < SKINS.length ? v : 0;
+})();
+let skinNameTimer = 0;
 
 function spawnAsteroids(count) {
   const SAFE_DIST = 130;
@@ -473,6 +505,15 @@ function update(dt) {
     bullets.push(...ship.tryShoot());
   }
 
+  // Cambiar skin
+  if (pressed('KeyC')) {
+    skinIndex = (skinIndex + 1) % SKINS.length;
+    localStorage.setItem('skin', String(skinIndex));
+    skinNameTimer = 1.5;
+  }
+
+  if (skinNameTimer > 0) skinNameTimer -= dt;
+
   ship.update(dt);
   bullets.forEach(b => b.update(dt));
   asteroids.forEach(a => a.update(dt));
@@ -547,17 +588,18 @@ function update(dt) {
 
 // ── Draw ──────────────────────────────────────────────────────────────────────
 function drawLifeIcon(x, y) {
+  const skin = SKINS[skinIndex];
+  const s = 0.45;
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(-Math.PI / 2);
-  ctx.strokeStyle = '#fff';
+  ctx.strokeStyle = skin.color;
   ctx.lineWidth   = 1.2;
   ctx.lineJoin    = 'round';
   ctx.beginPath();
-  ctx.moveTo( 9,  0);
-  ctx.lineTo(-6, -5);
-  ctx.lineTo(-3,  0);
-  ctx.lineTo(-6,  5);
+  ctx.moveTo(skin.verts[0][0] * s, skin.verts[0][1] * s);
+  for (let i = 1; i < skin.verts.length; i++)
+    ctx.lineTo(skin.verts[i][0] * s, skin.verts[i][1] * s);
   ctx.closePath();
   ctx.stroke();
   ctx.restore();
@@ -578,6 +620,11 @@ function drawHUD() {
   ctx.textAlign = 'center';
   ctx.fillStyle = '#fff';
   ctx.fillText(`NIVEL ${level}`, W / 2, 26);
+
+  if (skinNameTimer > 0) {
+    ctx.fillStyle = SKINS[skinIndex].color;
+    ctx.fillText(`SKIN: ${SKINS[skinIndex].name}`, W / 2, 50);
+  }
 
   for (let i = 0; i < lives; i++)
     drawLifeIcon(W - 16 - i * 22, 18);

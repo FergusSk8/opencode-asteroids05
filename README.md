@@ -29,6 +29,7 @@ Luego visita `http://localhost:3000`.
 | `←` `→`   | Rotar nave |
 | `↑`       | Propulsar  |
 | `Espacio` | Disparar   |
+| `C`       | Cambiar skin de la nave |
 
 ## Puntuación
 
@@ -45,3 +46,16 @@ Luego visita `http://localhost:3000`.
 - Asteroides se parten en fragmentos más pequeños al ser destruidos
 - Partículas de explosión al destruir asteroides
 - **Estrella fugaz**: asteroide bonus que cruza rápido con estela de cometa, se encoge y desaparece al cabo de 5 segundos. 300 puntos + power-up garantizado al acertarle
+
+## Skins
+
+La nave tiene 4 skins intercambiables con **C** durante el juego. Cada skin tiene silueta y color propio:
+
+| Skin         | Color |
+| ------------ | ----- |
+| CLÁSICA      | Blanco |
+| INTERCEPTOR  | Cian  |
+| DOBLE ALA    | Magenta |
+| DELTA        | Naranja |
+
+La selección se guarda en `localStorage` y persiste entre sesiones. Las skins son puramente cosméticas: no afectan colisión ni físicas.
