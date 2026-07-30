@@ -45,3 +45,4 @@ Luego visita `http://localhost:3000`.
 - Asteroides se parten en fragmentos más pequeños al ser destruidos
 - Partículas de explosión al destruir asteroides
 - **Estrella fugaz**: asteroide bonus que cruza rápido con estela de cometa, se encoge y desaparece al cabo de 5 segundos. 300 puntos + power-up garantizado al acertarle
+- **Escudo**: power-up azul que protege la nave de 3 colisiones con asteroides. 50% de probabilidad al destruir un asteroide junto al power-up de velocidad.

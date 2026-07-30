@@ -215,6 +215,7 @@ class Ship {
     this.vy     = 0;
     this.radius = 12;
     this.speedTimer    = 0;
+    this.shield        = 0;
     this.thrusting     = false;
     this.invincible    = 3;
     this.shootCooldown = 0;
@@ -259,6 +260,15 @@ class Ship {
     if (this.dead) return;
     // Parpadeo durante invencibilidad de reaparición
     if (this.invincible > 0 && Math.floor(this.invincible * 8) % 2 === 0) return;
+
+    if (this.shield > 0) {
+      const alpha = 0.25 + 0.75 * (this.shield / SHIELD_HITS);
+      ctx.strokeStyle = `rgba(68,170,255,${alpha.toFixed(2)})`;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, 24, 0, Math.PI * 2);
+      ctx.stroke();
+    }
 
     ctx.save();
     ctx.translate(this.x, this.y);
@@ -322,12 +332,14 @@ class Particle {
   }
 }
 
-// ── PowerUp (velocidad) ───────────────────────────────────────────────────────
+// ── PowerUp ───────────────────────────────────────────────────────────────────
 const DROP_CHANCE    = 0.2;
 const SPEED_DURATION = 5;
+const SHIELD_HITS    = 3;
 
 class PowerUp {
-  constructor(x, y) {
+  constructor(x, y, type = 'speed') {
+    this.type   = type;
     this.x      = x;
     this.y      = y;
     this.radius = 14;
@@ -341,7 +353,6 @@ class PowerUp {
   }
 
   draw() {
-    // Parpadea más rápido cuando está por expirar
     const blinkRate = this.ttl < 3 ? 6 : 10;
     const visible   = Math.floor(this.ttl * blinkRate) % 2 === 0;
     if (!visible) return;
@@ -349,28 +360,48 @@ class PowerUp {
     ctx.save();
     ctx.translate(this.x, this.y);
 
-    // Círculo exterior
-    ctx.strokeStyle = '#0ff';
-    ctx.lineWidth   = 1.5;
-    ctx.beginPath();
-    ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
-    ctx.stroke();
+    if (this.type === 'shield') {
+      ctx.strokeStyle = '#4af';
+      ctx.lineWidth   = 1.5;
+      ctx.beginPath();
+      ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+      ctx.stroke();
 
-    // Rayo (⚡)
-    const s = 8;
-    ctx.strokeStyle = '#0ff';
-    ctx.lineWidth   = 2.5;
-    ctx.lineJoin    = 'bevel';
-    ctx.beginPath();
-    ctx.moveTo( s * 0.3, -s);
-    ctx.lineTo(-s * 0.2, -s * 0.15);
-    ctx.lineTo( s * 0.1, -s * 0.15);
-    ctx.lineTo(-s * 0.3,  s);
-    ctx.lineTo( s * 0.2,  s * 0.1);
-    ctx.lineTo(-s * 0.1,  s * 0.1);
-    ctx.lineTo( s * 0.3, -s);
-    ctx.closePath();
-    ctx.stroke();
+      const s = 8;
+      ctx.strokeStyle = '#4af';
+      ctx.lineWidth   = 2.5;
+      ctx.lineJoin    = 'round';
+      ctx.beginPath();
+      ctx.moveTo( 0,    -s);
+      ctx.lineTo( s,    -s * 0.6);
+      ctx.lineTo( s,     s * 0.25);
+      ctx.lineTo( 0,     s);
+      ctx.lineTo(-s,     s * 0.25);
+      ctx.lineTo(-s,    -s * 0.6);
+      ctx.closePath();
+      ctx.stroke();
+    } else {
+      ctx.strokeStyle = '#0ff';
+      ctx.lineWidth   = 1.5;
+      ctx.beginPath();
+      ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+      ctx.stroke();
+
+      const s = 8;
+      ctx.strokeStyle = '#0ff';
+      ctx.lineWidth   = 2.5;
+      ctx.lineJoin    = 'bevel';
+      ctx.beginPath();
+      ctx.moveTo( s * 0.3, -s);
+      ctx.lineTo(-s * 0.2, -s * 0.15);
+      ctx.lineTo( s * 0.1, -s * 0.15);
+      ctx.lineTo(-s * 0.3,  s);
+      ctx.lineTo( s * 0.2,  s * 0.1);
+      ctx.lineTo(-s * 0.1,  s * 0.1);
+      ctx.lineTo( s * 0.3, -s);
+      ctx.closePath();
+      ctx.stroke();
+    }
 
     ctx.restore();
   }
@@ -500,7 +531,7 @@ function update(dt) {
         a.dead = true;
         score += POINTS[a.size];
         explode(a.x, a.y, a.size * 5);
-        if (Math.random() < DROP_CHANCE) powerups.push(new PowerUp(a.x, a.y));
+        if (Math.random() < DROP_CHANCE) powerups.push(new PowerUp(a.x, a.y, Math.random() < 0.5 ? 'speed' : 'shield'));
         newAsteroids.push(...a.split());
       }
     }
@@ -516,7 +547,7 @@ function update(dt) {
         s.dead = true;
         score += STAR_POINTS;
         explode(s.x, s.y, 10);
-        powerups.push(new PowerUp(s.x, s.y));
+        powerups.push(new PowerUp(s.x, s.y, Math.random() < 0.5 ? 'speed' : 'shield'));
       }
     }
   }
@@ -527,16 +558,28 @@ function update(dt) {
   if (ship.invincible <= 0) {
     for (const a of asteroids) {
       if (dist(ship, a) < ship.radius + a.radius * 0.82) {
-        killShip();
+        if (ship.shield > 0) {
+          ship.shield--;
+          a.dead = true;
+          explode(a.x, a.y, a.size * 5);
+          ship.invincible = 1;
+        } else {
+          killShip();
+        }
         break;
       }
     }
+    asteroids = asteroids.filter(a => !a.dead);
   }
 
   // Nave vs power-up
   for (const p of powerups) {
     if (dist(ship, p) < ship.radius + p.radius) {
-      ship.speedTimer = SPEED_DURATION;
+      if (p.type === 'shield') {
+        ship.shield = SHIELD_HITS;
+      } else {
+        ship.speedTimer = SPEED_DURATION;
+      }
       p.dead = true;
     }
   }
@@ -570,9 +613,16 @@ function drawHUD() {
   ctx.textAlign = 'left';
   ctx.fillText(`SCORE  ${score}`, 14, 26);
 
+  let hudY = 48;
   if (ship.speedTimer > 0) {
     ctx.fillStyle = '#0ff';
-    ctx.fillText(`VELOCIDAD x2  ${ship.speedTimer.toFixed(1)}s`, 14, 48);
+    ctx.fillText(`VELOCIDAD x2  ${ship.speedTimer.toFixed(1)}s`, 14, hudY);
+    hudY += 22;
+  }
+  if (ship.shield > 0) {
+    ctx.fillStyle = '#4af';
+    ctx.fillText(`ESCUDO x${ship.shield}`, 14, hudY);
+    hudY += 22;
   }
 
   ctx.textAlign = 'center';
