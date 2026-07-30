@@ -50,13 +50,14 @@ Luego visita `http://localhost:3000`.
 
 ## Skins
 
-La nave tiene 4 skins intercambiables con **C** durante el juego. Cada skin tiene silueta y color propio:
+La nave tiene 5 skins intercambiables con **C** durante el juego. Cada skin tiene silueta y color propio:
 
-| Skin         | Color |
-| ------------ | ----- |
-| CLÁSICA      | Blanco |
-| INTERCEPTOR  | Cian  |
-| DOBLE ALA    | Magenta |
-| DELTA        | Naranja |
+| Skin         | Color        | Tamaño | Puntos |
+| ------------ | ------------ | ------ | ------ |
+| CLÁSICA      | Blanco       | 1x     | 1x     |
+| INTERCEPTOR  | Cian         | 1x     | 1x     |
+| DOBLE ALA    | Magenta      | 1x     | 1x     |
+| DELTA        | Naranja      | 1x     | 1x     |
+| MATRIX       | Verde matrix | 2x    | 2x     |
 
-La selección se guarda en `localStorage` y persiste entre sesiones. Las skins son puramente cosméticas: no afectan colisión ni físicas.
+La selección se guarda en `localStorage` y persiste entre sesiones. La skin **MATRIX** es el doble de grande y otorga el doble de puntos al destruir asteroides y estrellas fugaces (su mayor tamaño también aumenta el radio de colisión y la hace más vulnerable).
